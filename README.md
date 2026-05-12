@@ -229,6 +229,8 @@ npm run dev
 
 Use [DEPLOYMENT.md](./DEPLOYMENT.md) for the full GitHub + Vercel deployment runbook.
 
+Use [PROGRESS.md](./PROGRESS.md) for current phase status and next priorities.
+
 Important deployment notes:
 
 ```txt
