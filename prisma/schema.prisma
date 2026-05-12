@@ -1,0 +1,412 @@
+// SamCar Rental V2 — Prisma schema.
+// Commission-based rental platform: cars belong to partner owners; admin
+// confirms availability before publishing publicly. Documents uploaded with
+// booking requests are admin-only.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Enums
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  ADMIN
+  STAFF
+  CUSTOMER
+}
+
+enum CustomerVerificationStatus {
+  UNVERIFIED
+  PENDING_REVIEW
+  VERIFIED
+  BLACKLISTED
+}
+
+enum CarStatus {
+  DRAFT
+  CONFIRMED_AVAILABLE
+  PUBLISHED
+  UNAVAILABLE
+  ARCHIVED
+}
+
+enum TransmissionType {
+  AUTOMATIC
+  MANUAL
+}
+
+enum FuelType {
+  GASOLINE
+  DIESEL
+  HYBRID
+  ELECTRIC
+  OTHER
+}
+
+enum BookingStatus {
+  PENDING_VERIFICATION
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+  REFUNDED
+}
+
+enum BookingDocumentType {
+  GOVERNMENT_ID_1
+  GOVERNMENT_ID_2
+  SELFIE_WITH_ID
+  PROOF_OF_BILLING
+}
+
+enum PaymentMethod {
+  GCASH
+  BANK_TRANSFER
+  CASH
+  CARD
+}
+
+enum NotificationType {
+  EMAIL
+  SMS
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+enum GpsDeviceStatus {
+  UNASSIGNED
+  ONLINE
+  OFFLINE
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Identity
+// ─────────────────────────────────────────────────────────────────────────────
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  name         String
+  passwordHash String
+  role         UserRole   @default(ADMIN)
+
+  customer     Customer?
+  auditLogs    AuditLog[]
+
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model Customer {
+  id                 String                     @id @default(cuid())
+  userId             String?                    @unique
+  user               User?                      @relation(fields: [userId], references: [id])
+
+  name               String
+  email              String                     @unique
+  contactNumber      String
+  facebookName       String?
+  address            String
+
+  // Admin-only fields:
+  verificationStatus CustomerVerificationStatus @default(UNVERIFIED)
+  notes              String?
+
+  joinedAt           DateTime                   @default(now())
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+
+  bookings           Booking[]
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Partner network (commission-based ownership)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Partner {
+  id            String   @id @default(cuid())
+  name          String
+  contactNumber String
+  email         String   @unique
+  facebook      String?
+  address       String
+
+  // Admin-managed commission rate (e.g. 18 = 18%).
+  commissionPct Decimal  @db.Decimal(5, 2)
+  notes         String?
+
+  joinedAt      DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  cars          Car[]
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Inventory
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Car {
+  id            String            @id @default(cuid())
+  slug          String            @unique
+  brand         String
+  // Display name like "Vios XLE" — kept as `name` to match the mock UI shape.
+  name          String
+  year          Int
+  category      String
+  tagline       String?
+
+  seats         Int
+  transmission  TransmissionType
+  fuelType      FuelType
+  pricePerDay   Decimal           @db.Decimal(10, 2)
+
+  // Public visibility rule: surfaced on /cars only when
+  // status = PUBLISHED AND isPublic = true.
+  status        CarStatus         @default(DRAFT)
+  isPublic      Boolean           @default(false)
+
+  partnerId     String?
+  partner       Partner?          @relation(fields: [partnerId], references: [id])
+
+  // Convenience pointer to the primary CarImage url. Optional — falls back
+  // to the first image with isPrimary=true at query time.
+  primaryImage  String?
+
+  images        CarImage[]
+  availability  CarAvailability[]
+  bookings      Booking[]
+  gpsDevice     GpsDevice?
+
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([status, isPublic])
+  @@index([partnerId])
+}
+
+model CarImage {
+  id        String   @id @default(cuid())
+  carId     String
+  car       Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
+  url       String
+  publicId  String?  // Cloudinary public_id (for delete)
+  position  Int      @default(0)
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([carId])
+}
+
+model CarAvailability {
+  id        String   @id @default(cuid())
+  carId     String
+  car       Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
+  from      DateTime
+  to        DateTime
+  notes     String?
+  createdAt DateTime @default(now())
+
+  @@index([carId, from, to])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Bookings + documents
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Booking {
+  id             String        @id @default(cuid())
+  reference      String        @unique
+
+  customerId     String
+  customer       Customer      @relation(fields: [customerId], references: [id])
+  carId          String
+  car            Car           @relation(fields: [carId], references: [id])
+
+  startDateTime  DateTime
+  endDateTime    DateTime
+  durationDays   Int
+
+  purpose        String
+  destination    String
+  withDriver     Boolean       @default(false)
+  passengers     Int
+  pickupAddress  String
+  dropoffAddress String
+  facebookName   String?
+
+  // Customer-supplied note on the form.
+  notes          String?
+  // Admin-only note. Never returned to public.
+  adminNotes     String?
+
+  status         BookingStatus @default(PENDING_VERIFICATION)
+  paymentStatus  PaymentStatus @default(UNPAID)
+
+  totalAmount    Decimal       @db.Decimal(10, 2)
+  paidAmount     Decimal       @default(0) @db.Decimal(10, 2)
+
+  documents      BookingDocument[]
+  payments       Payment[]
+  invoice        Invoice?
+  notifications  NotificationLog[]
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([customerId])
+  @@index([carId])
+  @@index([createdAt])
+}
+
+// Admin-only. Files live in Cloudinary or equivalent private storage; URLs
+// must NEVER be returned by public endpoints. Streaming endpoint will be
+// admin-gated when it lands.
+model BookingDocument {
+  id         String              @id @default(cuid())
+  bookingId  String
+  booking    Booking             @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  type       BookingDocumentType
+  url        String
+  publicId   String?
+  filename   String
+  mimeType   String
+  size       Int
+  uploadedAt DateTime            @default(now())
+
+  @@index([bookingId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Money
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Payment {
+  id            String        @id @default(cuid())
+  bookingId     String
+  booking       Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  amount        Decimal       @db.Decimal(10, 2)
+  method        PaymentMethod
+  reference     String
+  receivedAt    DateTime
+  // Admin-only proof of payment (private upload).
+  proofUrl      String?
+  proofPublicId String?
+  notes         String?
+  recordedById  String?
+  createdAt     DateTime      @default(now())
+
+  @@index([bookingId])
+}
+
+model Invoice {
+  id             String        @id @default(cuid())
+  number         String        @unique
+  bookingId      String        @unique
+  booking        Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  // Snapshot fields — preserved even if customer/car names change later.
+  customerName   String
+  customerEmail  String
+  carLabel       String
+
+  rentalStart    DateTime
+  rentalEnd      DateTime
+  pickupAddress  String
+  dropoffAddress String
+
+  subtotal       Decimal       @db.Decimal(10, 2)
+  driverFee      Decimal       @default(0) @db.Decimal(10, 2)
+  total          Decimal       @db.Decimal(10, 2)
+  paid           Decimal       @default(0) @db.Decimal(10, 2)
+  balance        Decimal       @db.Decimal(10, 2)
+
+  paymentStatus  PaymentStatus
+  issuedAt       DateTime      @default(now())
+  dueDate        DateTime
+  notes          String?
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Notifications + GPS + audit
+// ─────────────────────────────────────────────────────────────────────────────
+
+model NotificationLog {
+  id               String              @id @default(cuid())
+  type             NotificationType
+  status           NotificationStatus  @default(PENDING)
+  recipient        String
+  subject          String
+  body             String
+  bookingId        String?
+  booking          Booking?            @relation(fields: [bookingId], references: [id])
+  providerResponse String?
+  sentAt           DateTime?
+  createdAt        DateTime            @default(now())
+
+  @@index([bookingId])
+  @@index([status])
+}
+
+model GpsDevice {
+  id           String          @id @default(cuid())
+  imei         String          @unique
+  provider     String
+  status       GpsDeviceStatus @default(UNASSIGNED)
+  carId        String?         @unique
+  car          Car?            @relation(fields: [carId], references: [id])
+  registeredAt DateTime        @default(now())
+  locations    GpsLocation[]
+}
+
+model GpsLocation {
+  id         String    @id @default(cuid())
+  deviceId   String
+  device     GpsDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  latitude   Decimal   @db.Decimal(10, 7)
+  longitude  Decimal   @db.Decimal(10, 7)
+  speed      Float?
+  heading    Float?
+  recordedAt DateTime
+  createdAt  DateTime  @default(now())
+
+  @@index([deviceId, recordedAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id])
+  actorEmail String?
+  action     String   // e.g. BOOKING_APPROVED, CAR_PUBLISHED
+  entityType String   // Booking, Car, Customer, ...
+  entityId   String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@index([createdAt])
+}
