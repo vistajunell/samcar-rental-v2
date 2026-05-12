@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { format, parseISO } from "date-fns";
-import { Phone, Mail, MapPin, Globe } from "lucide-react";
+import { Phone, Mail, MapPin, Globe, Pencil } from "lucide-react";
 import PageHeader from "@/components/admin/PageHeader";
 import { getPartnerById } from "@/lib/queries/partners";
-import { getCarsForCarousel } from "@/lib/queries/cars";
+import { getAdminCars } from "@/lib/queries/cars";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -15,7 +15,7 @@ export default async function PartnerDetailPage({ params }: Props) {
   const partner = await getPartnerById(id);
   if (!partner) notFound();
 
-  const allCars = await getCarsForCarousel();
+  const allCars = await getAdminCars();
   const cars = allCars.filter((c) => partner.carIds.includes(c.id));
 
   return (
@@ -27,6 +27,15 @@ export default async function PartnerDetailPage({ params }: Props) {
         ]}
         title={partner.name}
         subtitle={`Joined ${format(parseISO(partner.joinedAt), "MMMM yyyy")}`}
+        actions={
+          <Link
+            href={`/admin/partners/${partner.id}/edit`}
+            className="shine-btn inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-brand-red hover:bg-deep-red text-white text-sm font-bold transition-colors shadow-md shadow-brand-red/20"
+          >
+            <Pencil className="relative z-[2] h-4 w-4" />
+            <span className="relative z-[2]">Edit Partner</span>
+          </Link>
+        }
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
@@ -48,7 +57,7 @@ export default async function PartnerDetailPage({ params }: Props) {
           <section className="rounded-2xl bg-white dark:bg-[#111] border border-gray-100 dark:border-white/[.05] overflow-hidden">
             <header className="px-5 py-4 border-b border-gray-100 dark:border-white/[.05]">
               <h2 className="text-sm font-bold text-gray-900 dark:text-white">
-                Cars under this partner ({cars.length})
+                Inventory under this partner ({cars.length})
               </h2>
             </header>
             {cars.length === 0 ? (
@@ -110,14 +119,15 @@ export default async function PartnerDetailPage({ params }: Props) {
               Actions
             </h2>
             <div className="grid grid-cols-1 gap-2">
-              <button
-                type="button"
+              <Link
+                href={`/admin/partners/${partner.id}/edit`}
                 className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 dark:border-white/15 text-xs font-bold text-gray-700 dark:text-gray-200 hover:border-brand-red hover:text-brand-red transition-colors"
               >
                 Edit partner
-              </button>
+              </Link>
               <button
                 type="button"
+                disabled
                 className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 dark:border-white/15 text-xs font-bold text-gray-700 dark:text-gray-200 hover:border-brand-red hover:text-brand-red transition-colors"
               >
                 Send confirmation request

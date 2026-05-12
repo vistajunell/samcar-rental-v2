@@ -12,13 +12,13 @@ export default async function PartnersListPage() {
         title="Partners"
         subtitle={`${partners.length} partner car owners with confirmed inventory.`}
         actions={
-          <button
-            type="button"
+          <Link
+            href="/admin/partners/new"
             className="shine-btn inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-brand-red hover:bg-deep-red text-white text-sm font-bold transition-colors"
           >
             <Plus className="relative z-[2] h-4 w-4" />
             <span className="relative z-[2]">Add Partner</span>
-          </button>
+          </Link>
         }
       />
 
