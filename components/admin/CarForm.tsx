@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
-import { AlertCircle, CheckCircle2, Save } from "lucide-react";
+import { useActionState, useRef, useState } from "react";
+import { AlertCircle, CheckCircle2, ImagePlus, Save } from "lucide-react";
 import {
   createCarAction,
   updateCarAction,
@@ -142,15 +142,8 @@ export default function CarForm({ mode, car, partners }: Props) {
               <option value="true">Visible publicly</option>
             </select>
           </Field>
-          <Field label="Primary Image Path" name="primaryImage" error={errors.primaryImage?.[0]}>
-            <input
-              id="primaryImage"
-              name="primaryImage"
-              type="text"
-              className={inputClass}
-              defaultValue={car?.image}
-              placeholder="/images/cars/vios-xle-2026.webp"
-            />
+          <Field label="Primary Image" name="primaryImage" error={errors.primaryImage?.[0]}>
+            <ImagePicker initialValue={car?.image ?? ""} />
           </Field>
         </div>
       </Section>
@@ -209,6 +202,130 @@ function fuelValue(fuel?: string) {
 function carPartnerId(car: CarUIView | undefined, partners: Partner[]) {
   if (!car) return "";
   return partners.find((p) => p.carIds.includes(car.id))?.id ?? "";
+}
+
+function ImagePicker({ initialValue }: { initialValue: string }) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [imageValue, setImageValue] = useState(initialValue);
+  const [fileName, setFileName] = useState("");
+  const [localError, setLocalError] = useState("");
+
+  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setLocalError("");
+
+    if (!file.type.startsWith("image/")) {
+      setLocalError("Choose an image file.");
+      return;
+    }
+
+    if (file.size > 8 * 1024 * 1024) {
+      setLocalError("Choose an image under 8 MB.");
+      return;
+    }
+
+    try {
+      const compressed = await compressImage(file);
+      if (compressed.length > 1_000_000) {
+        setLocalError("This image is still too large. Try a smaller photo.");
+        return;
+      }
+      setImageValue(compressed);
+      setFileName(file.name);
+    } catch {
+      setLocalError("Could not read that image. Try another file.");
+    }
+  }
+
+  return (
+    <div className="space-y-3">
+      <input id="primaryImage" name="primaryImage" type="hidden" value={imageValue} readOnly />
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        className="sr-only"
+        onChange={handleFileChange}
+      />
+
+      <div className="rounded-xl border border-dashed border-gray-300 dark:border-white/15 bg-gray-50 dark:bg-white/[.03] p-3">
+        {imageValue ? (
+          <div className="relative h-36 overflow-hidden rounded-lg bg-white dark:bg-black/30">
+            <img
+              src={imageValue}
+              alt="Selected car preview"
+              className="h-full w-full object-contain p-2"
+            />
+          </div>
+        ) : (
+          <div className="flex h-36 items-center justify-center rounded-lg bg-white dark:bg-black/30 text-xs font-bold text-gray-400">
+            No image selected
+          </div>
+        )}
+
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-bold text-gray-900 dark:text-white">
+              {fileName || (imageValue ? "Existing image selected" : "Add a car image")}
+            </p>
+            <p className="text-[11px] text-gray-500 dark:text-gray-400">
+              JPG, PNG, or WEBP. Large photos are compressed before saving.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-brand-red px-4 py-2 text-xs font-bold text-white shadow-md shadow-brand-red/20 transition-colors hover:bg-deep-red"
+          >
+            <ImagePlus className="h-4 w-4" />
+            Browse image
+          </button>
+        </div>
+      </div>
+
+      {localError && (
+        <p className="flex items-start gap-1 text-[11px] text-red-600 dark:text-red-400">
+          <AlertCircle className="h-3 w-3 mt-0.5 shrink-0" />
+          <span>{localError}</span>
+        </p>
+      )}
+    </div>
+  );
+}
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function compressImage(file: File) {
+  const dataUrl = await readFileAsDataUrl(file);
+  const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new window.Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = dataUrl;
+  });
+
+  const maxSize = 1400;
+  const ratio = Math.min(1, maxSize / Math.max(image.width, image.height));
+  const width = Math.max(1, Math.round(image.width * ratio));
+  const height = Math.max(1, Math.round(image.height * ratio));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+
+  const context = canvas.getContext("2d");
+  if (!context) return dataUrl;
+
+  context.drawImage(image, 0, 0, width, height);
+  return canvas.toDataURL("image/webp", 0.82);
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {

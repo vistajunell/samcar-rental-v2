@@ -1,16 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Users, Cog, Fuel } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import SmartCarImage from "@/components/ui/SmartCarImage";
 import type { CarUIView } from "@/lib/queries/cars";
 
 const statusStyle: Record<string, string> = {
+  Published: "bg-green-500/15 text-green-300 border-green-500/40",
   "Confirmed Available": "bg-green-500/15 text-green-300 border-green-500/40",
   Reserved: "bg-yellow-500/20 text-yellow-300 border-yellow-500/40",
   Unavailable: "bg-gray-500/20 text-gray-300 border-gray-500/40",
+  Draft: "bg-gray-500/20 text-gray-300 border-gray-500/40",
+  Archived: "bg-slate-500/20 text-slate-300 border-slate-500/40",
 };
 
 export default function CarShowcaseCard({ cars }: { cars: CarUIView[] }) {
@@ -79,7 +82,7 @@ export default function CarShowcaseCard({ cars }: { cars: CarUIView[] }) {
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             className="relative w-full h-full max-w-[680px]"
           >
-            <Image
+            <SmartCarImage
               src={car.image}
               alt={`${car.brand} ${car.name}`}
               fill

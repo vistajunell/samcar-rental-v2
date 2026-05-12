@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { format, parseISO } from "date-fns";
 import {
@@ -15,6 +14,7 @@ import {
 import PageHeader from "@/components/admin/PageHeader";
 import StatusBadge from "@/components/admin/StatusBadge";
 import CarVisibilityActions from "@/components/admin/CarVisibilityActions";
+import SmartCarImage from "@/components/ui/SmartCarImage";
 import { getAdminCarById } from "@/lib/queries/cars";
 import { getPartnerForCar } from "@/lib/queries/partners";
 import { getBookingsByCar } from "@/lib/queries/bookings";
@@ -70,7 +70,7 @@ export default async function CarDetailAdminPage({ params }: Props) {
         <div className="space-y-5">
           <div className="relative rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-[#1a1a1a] dark:to-[#0a0a0a] border border-gray-100 dark:border-white/[.05] h-[280px] sm:h-[360px]">
             {car.image ? (
-              <Image
+              <SmartCarImage
                 src={car.image}
                 alt={`${car.brand} ${car.name}`}
                 fill

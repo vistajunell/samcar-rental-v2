@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { format, parseISO } from "date-fns";
@@ -12,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import SmartCarImage from "@/components/ui/SmartCarImage";
 import { getCarBySlug } from "@/lib/queries/cars";
 
 export const dynamic = "force-dynamic";
@@ -60,7 +60,7 @@ export default async function CarDetailPage({ params }: Params) {
                 aria-hidden
                 className="absolute bottom-4 left-1/2 -translate-x-1/2 w-3/4 h-6 rounded-full bg-brand-red/40 blur-3xl"
               />
-              <Image
+              <SmartCarImage
                 src={car.image}
                 alt={`${car.brand} ${car.name}`}
                 fill

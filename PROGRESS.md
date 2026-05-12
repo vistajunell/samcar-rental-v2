@@ -1,6 +1,6 @@
 # SamCar Rental V2 Progress
 
-Last updated: 2026-05-12
+Last updated: 2026-05-13
 
 ## Current Phase
 
@@ -18,7 +18,7 @@ The project is deployed and usable on Vercel. Public booking works, Neon/Postgre
 | Phase 1 - Public Flow | Complete | Old SamCar visual direction preserved, public cars, car details, booking form, booking success page, dark/light mode. |
 | Phase 2 - Database and Auth | Complete core | Prisma schema, Neon database, seed data, custom admin login, JWT cookie sessions, protected admin routes. |
 | Phase 3 - Admin Dashboard Core | Complete core | Admin layout, dashboard, list/detail pages, and booking status actions exist. Full CRUD workflows are still pending. |
-| Phase 3.5 - Admin Hardening | In progress | Admin login human check and password change flow are added; CRUD and management hardening remain before Phase 4. |
+| Phase 3.5 - Admin Hardening | In progress | Admin login human check, password change, booking management, and car inventory workflows are added; partner/customer hardening remains before Phase 4. |
 | Phase 4 - Documents, Invoice, Email, SMS | Not started | Schemas and seeded mock data exist, but real private uploads, PDF generation, email, SMS, and notification sending are pending. |
 | Phase 5 - GPS Tracking | Not started | Data model and placeholder admin page exist, but provider integration and live tracking are pending. |
 
@@ -43,15 +43,16 @@ The project is deployed and usable on Vercel. Public booking works, Neon/Postgre
 - Booking detail supports editable internal admin notes.
 - Booking detail supports recording payments and automatically updates booking payment status.
 - Admin cars list now shows full inventory, including draft, hidden, unavailable, and archived units.
-- Admin can create and edit cars with partner assignment, price, specs, image path, status, and availability window.
+- Admin can create and edit cars with partner assignment, price, specs, browsed/compressed image, status, and availability window.
 - Admin can publish, unpublish, mark unavailable, and archive cars.
+- Public and admin car image cards support both existing image paths and browsed database-backed images.
 
 ## In Progress
 
 - Phase 3.5 admin hardening and management features.
 - Turning read-only admin tables into real create/edit/update workflows.
 - Booking management hardening: status transitions, notes, and payment recording.
-- Inventory management hardening: car create/edit, visibility actions, partner assignment, and availability windows.
+- Inventory management hardening: partner/customer workflows after car create/edit, visibility actions, partner assignment, image browsing, and availability windows.
 - Replacing mock document URLs with private upload storage.
 - Hardening production admin credentials beyond seeded demo accounts.
 
@@ -59,15 +60,17 @@ The project is deployed and usable on Vercel. Public booking works, Neon/Postgre
 
 1. Add real admin user/password management so seeded demo credentials are no longer used.
 2. Add partner management forms: create/edit partners and commission notes.
-3. Add invoice generation trigger for approved or paid bookings.
-4. Add private Cloudinary upload flow for customer documents and payment proofs.
-5. Add notification actions for manual email/SMS sending with `NotificationLog` records.
+3. Add customer review tools: verification status, blacklist flag, and admin notes.
+4. Add invoice generation trigger for approved or paid bookings.
+5. Add private Cloudinary upload flow for customer documents and payment proofs.
+6. Add notification actions for manual email/SMS sending with `NotificationLog` records.
 
 ## Known Gaps
 
 - Seeded admin credentials still exist and should be replaced before real customer use.
 - Booking documents currently store mock URLs and metadata only.
-- Admin cars, partners, customers, payments, invoices, and notifications are mostly read-only.
+- Admin partners, customers, payments, invoices, and notifications are mostly read-only.
+- Browsed admin car images are temporarily stored as compressed data URLs until Cloudinary/upload storage is wired.
 - Invoice PDF generation is not wired yet.
 - Email/SMS providers are not configured or sending yet.
 - GPS is a placeholder module.

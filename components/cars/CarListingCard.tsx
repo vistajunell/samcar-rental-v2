@@ -1,16 +1,22 @@
 import Link from "next/link";
-import Image from "next/image";
 import { format, parseISO } from "date-fns";
 import { Users, Cog, Fuel, ChevronRight, Calendar, ShieldCheck } from "lucide-react";
+import SmartCarImage from "@/components/ui/SmartCarImage";
 import type { CarUIView } from "@/lib/queries/cars";
 
 const statusStyle: Record<string, string> = {
+  Published:
+    "bg-green-500/15 text-green-700 dark:text-green-300 border border-green-500/30",
   "Confirmed Available":
     "bg-green-500/15 text-green-700 dark:text-green-300 border border-green-500/30",
   Reserved:
     "bg-yellow-500/15 text-yellow-700 dark:text-yellow-300 border border-yellow-500/40",
   Unavailable:
     "bg-gray-500/15 text-gray-700 dark:text-gray-300 border border-gray-500/40",
+  Draft:
+    "bg-gray-500/15 text-gray-700 dark:text-gray-300 border border-gray-500/40",
+  Archived:
+    "bg-slate-500/15 text-slate-700 dark:text-slate-300 border border-slate-500/40",
 };
 
 function formatAvailabilityWindow(fromIso: string, toIso: string): string {
@@ -36,7 +42,7 @@ export default function CarListingCard({ car }: { car: CarUIView }) {
           aria-hidden
           className="absolute bottom-2 left-1/2 -translate-x-1/2 w-3/4 h-3 rounded-full bg-brand-red/30 blur-2xl group-hover:bg-brand-red/50 transition-colors"
         />
-        <Image
+        <SmartCarImage
           src={car.image}
           alt={`${car.brand} ${car.name}`}
           fill

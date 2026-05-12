@@ -32,7 +32,11 @@ const carSchema = z.object({
   status: z.enum(["DRAFT", "CONFIRMED_AVAILABLE", "PUBLISHED", "UNAVAILABLE", "ARCHIVED"]),
   isPublic: z.enum(["true", "false"]),
   partnerId: z.string().trim().optional(),
-  primaryImage: z.string().trim().min(1, "Primary image path is required").max(500),
+  primaryImage: z
+    .string()
+    .trim()
+    .min(1, "Primary image is required")
+    .max(1_100_000, "Choose a smaller image or use an existing optimized image."),
   availableFrom: z.string().trim().min(1, "Available from date is required"),
   availableTo: z.string().trim().min(1, "Available to date is required"),
   availabilityNotes: z.string().trim().max(500).optional(),

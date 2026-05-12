@@ -1,8 +1,8 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Plus, ChevronRight, Eye, EyeOff } from "lucide-react";
 import PageHeader from "@/components/admin/PageHeader";
 import StatusBadge from "@/components/admin/StatusBadge";
+import SmartCarImage from "@/components/ui/SmartCarImage";
 import { getAdminCars } from "@/lib/queries/cars";
 import { getPartnerForCar } from "@/lib/queries/partners";
 
@@ -36,7 +36,7 @@ export default async function AdminCarsPage() {
           >
             <div className="relative h-40 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-[#1a1a1a] dark:to-[#0a0a0a]">
               {car.image ? (
-                <Image
+                <SmartCarImage
                   src={car.image}
                   alt={`${car.brand} ${car.name}`}
                   fill
