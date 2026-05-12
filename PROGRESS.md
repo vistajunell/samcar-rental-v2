@@ -18,7 +18,7 @@ The project is deployed and usable on Vercel. Public booking works, Neon/Postgre
 | Phase 1 - Public Flow | Complete | Old SamCar visual direction preserved, public cars, car details, booking form, booking success page, dark/light mode. |
 | Phase 2 - Database and Auth | Complete core | Prisma schema, Neon database, seed data, custom admin login, JWT cookie sessions, protected admin routes. |
 | Phase 3 - Admin Dashboard Core | Complete core | Admin layout, dashboard, list/detail pages, and booking status actions exist. Full CRUD workflows are still pending. |
-| Phase 3.5 - Admin Hardening | In progress | Admin login human check and password change flow are being added before moving to automation-heavy Phase 4. |
+| Phase 3.5 - Admin Hardening | In progress | Admin login human check and password change flow are added; CRUD and management hardening remain before Phase 4. |
 | Phase 4 - Documents, Invoice, Email, SMS | Not started | Schemas and seeded mock data exist, but real private uploads, PDF generation, email, SMS, and notification sending are pending. |
 | Phase 5 - GPS Tracking | Not started | Data model and placeholder admin page exist, but provider integration and live tracking are pending. |
 
