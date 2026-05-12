@@ -356,6 +356,15 @@ export async function recordBookingPaymentAction(
         },
       });
 
+      await tx.invoice.updateMany({
+        where: { bookingId },
+        data: {
+          paid: nextPaid,
+          balance: new Prisma.Decimal(booking.totalAmount).minus(nextPaid),
+          paymentStatus,
+        },
+      });
+
       await tx.auditLog.create({
         data: {
           actorId: session.userId,

@@ -103,6 +103,18 @@ const getCachedInvoiceById = unstable_cache(
   { tags: [CACHE_TAGS.invoices], revalidate: 60 },
 );
 
+const getCachedInvoiceByBookingId = unstable_cache(
+  async (bookingId: string) => {
+    const row = await prisma.invoice.findUnique({
+      where: { bookingId },
+      include: invoiceInclude,
+    });
+    return row ? toView(row) : null;
+  },
+  ["admin-invoice-by-booking-id"],
+  { tags: [CACHE_TAGS.invoices, CACHE_TAGS.bookings], revalidate: 60 },
+);
+
 export async function getInvoices(): Promise<AdminInvoice[]> {
   return getCachedInvoices();
 }
@@ -111,4 +123,10 @@ export async function getInvoiceById(
   id: string,
 ): Promise<AdminInvoice | null> {
   return getCachedInvoiceById(id);
+}
+
+export async function getInvoiceByBookingId(
+  bookingId: string,
+): Promise<AdminInvoice | null> {
+  return getCachedInvoiceByBookingId(bookingId);
 }

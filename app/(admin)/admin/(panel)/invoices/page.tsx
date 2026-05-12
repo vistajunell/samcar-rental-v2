@@ -16,13 +16,13 @@ export default async function InvoicesListPage() {
         title="Invoices"
         subtitle={`${invoices.length} invoices issued.`}
         actions={
-          <button
-            type="button"
+          <Link
+            href="/admin/bookings"
             className="shine-btn inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-brand-red hover:bg-deep-red text-white text-sm font-bold transition-colors"
           >
             <Plus className="relative z-[2] h-4 w-4" />
-            <span className="relative z-[2]">Generate Invoice</span>
-          </button>
+            <span className="relative z-[2]">Choose Booking</span>
+          </Link>
         }
       />
 

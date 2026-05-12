@@ -17,7 +17,9 @@ import StatusBadge from "@/components/admin/StatusBadge";
 import BookingStatusActions from "@/components/admin/BookingStatusActions";
 import BookingAdminNotesForm from "@/components/admin/BookingAdminNotesForm";
 import BookingPaymentForm from "@/components/admin/BookingPaymentForm";
+import InvoiceGenerateForm from "@/components/admin/InvoiceGenerateForm";
 import { getBookingById } from "@/lib/queries/bookings";
+import { getInvoiceByBookingId } from "@/lib/queries/invoices";
 import { getPartnerById } from "@/lib/queries/partners";
 import { getPaymentsForBooking } from "@/lib/queries/payments";
 
@@ -32,12 +34,15 @@ export default async function BookingDetailPage({ params }: Props) {
   const booking = await getBookingById(id);
   if (!booking) notFound();
 
-  const [partner, payments] = await Promise.all([
+  const [partner, payments, invoice] = await Promise.all([
     booking.partnerId ? getPartnerById(booking.partnerId) : null,
     getPaymentsForBooking(booking.id),
+    getInvoiceByBookingId(booking.id),
   ]);
 
   const balance = booking.totalAmount - booking.paidAmount;
+  const canGenerateInvoice =
+    !invoice && (booking.status === "APPROVED" || booking.status === "COMPLETED");
 
   return (
     <div>
@@ -283,6 +288,40 @@ export default async function BookingDetailPage({ params }: Props) {
               Record Payment
             </h2>
             <BookingPaymentForm bookingId={booking.id} balance={balance} />
+          </section>
+
+          <section className="rounded-2xl bg-white dark:bg-[#111] border border-gray-100 dark:border-white/[.05] p-5">
+            <h2 className="text-sm font-bold text-gray-900 dark:text-white mb-3">
+              Invoice
+            </h2>
+            {invoice ? (
+              <div className="space-y-2">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Invoice generated for this booking.
+                </p>
+                <Link
+                  href={`/admin/invoices/${invoice.id}`}
+                  className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-4 py-2.5 text-xs font-bold text-gray-700 transition-colors hover:border-brand-red hover:text-brand-red dark:border-white/15 dark:text-gray-200"
+                >
+                  View {invoice.number}
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-[11px] leading-relaxed text-gray-500 dark:text-gray-400">
+                  Generate after approval. The invoice snapshots customer, rental, payment, and balance details.
+                </p>
+                <InvoiceGenerateForm
+                  bookingId={booking.id}
+                  disabled={!canGenerateInvoice}
+                />
+                {!canGenerateInvoice && (
+                  <p className="text-[10px] text-gray-400">
+                    Approve this booking before generating an invoice.
+                  </p>
+                )}
+              </div>
+            )}
           </section>
 
           {/* Car + partner */}

@@ -5,7 +5,7 @@ Last updated: 2026-05-13
 ## Current Phase
 
 ```txt
-Phase 3.5 - Admin hardening and management workflows are in progress.
+Phase 4 - Documents, invoices, and communications are in progress.
 ```
 
 The project is deployed and usable on Vercel. Public booking works, Neon/PostgreSQL is connected, admin login works, and the admin dashboard can view real database records.
@@ -18,8 +18,8 @@ The project is deployed and usable on Vercel. Public booking works, Neon/Postgre
 | Phase 1 - Public Flow | Complete | Old SamCar visual direction preserved, public cars, car details, booking form, booking success page, dark/light mode. |
 | Phase 2 - Database and Auth | Complete core | Prisma schema, Neon database, seed data, custom admin login, JWT cookie sessions, protected admin routes. |
 | Phase 3 - Admin Dashboard Core | Complete core | Admin layout, dashboard, list/detail pages, and booking status actions exist. Full CRUD workflows are still pending. |
-| Phase 3.5 - Admin Hardening | In progress | Admin login human check, password change, booking, car inventory, partner management, and customer review workflows are added. |
-| Phase 4 - Documents, Invoice, Email, SMS | Not started | Schemas and seeded mock data exist, but real private uploads, PDF generation, email, SMS, and notification sending are pending. |
+| Phase 3.5 - Admin Hardening | Complete core | Admin login human check, password change, booking, car inventory, partner management, customer review, and dashboard performance polish are added. |
+| Phase 4 - Documents, Invoice, Email, SMS | In progress | Invoice generation from approved/completed bookings is added; private uploads, PDF download, email, SMS, and notification sending remain. |
 | Phase 5 - GPS Tracking | Not started | Data model and placeholder admin page exist, but provider integration and live tracking are pending. |
 
 ## Completed
@@ -54,23 +54,26 @@ The project is deployed and usable on Vercel. Public booking works, Neon/Postgre
 - Admin cars page no longer performs per-car partner lookups.
 - Customer and dashboard totals now use database aggregation instead of loading all rows into memory.
 - Protected admin panel routes are explicitly runtime-dynamic to avoid build-time dashboard database work.
+- Admin can generate an invoice from an approved or completed booking.
+- Booking detail shows the linked invoice once generated.
+- Recorded payments now sync an existing invoice's paid amount, balance, and payment status.
 
 ## In Progress
 
 - Phase 3.5 admin hardening and management features.
 - Turning read-only admin tables into real create/edit/update workflows.
 - Booking management hardening: status transitions, notes, and payment recording.
-- Phase 3.5 polish and performance checks after car, partner, customer, booking, and dashboard cache workflows.
+- Phase 4 document, invoice, and communication features.
 - Replacing mock document URLs with private upload storage.
 - Hardening production admin credentials beyond seeded demo accounts.
 
 ## Next Priority
 
 1. Add real admin user/password management so seeded demo credentials are no longer used.
-2. Add invoice generation trigger for approved or paid bookings.
+2. Add printable/PDF invoice output.
 3. Add private Cloudinary upload flow for customer documents and payment proofs.
 4. Add notification actions for manual email/SMS sending with `NotificationLog` records.
-5. Review admin read-only pages for payments, invoices, and notifications.
+5. Review admin read-only pages for payments and notifications.
 
 ## Known Gaps
 
@@ -78,7 +81,7 @@ The project is deployed and usable on Vercel. Public booking works, Neon/Postgre
 - Booking documents currently store mock URLs and metadata only.
 - Admin payments, invoices, and notifications are mostly read-only.
 - Browsed admin car images are temporarily stored as compressed data URLs until Cloudinary/upload storage is wired.
-- Invoice PDF generation is not wired yet.
+- Invoice creation is wired; printable/PDF invoice download is not wired yet.
 - Email/SMS providers are not configured or sending yet.
 - GPS is a placeholder module.
 - There are no automated tests yet.
