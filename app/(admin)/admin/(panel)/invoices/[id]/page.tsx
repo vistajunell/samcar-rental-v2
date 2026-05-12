@@ -31,18 +31,19 @@ export default async function InvoiceDetailPage({ params }: Props) {
         )}`}
         actions={
           <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
+            <Link
+              href={`/admin/invoices/${invoice.id}/print`}
+              target="_blank"
               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-white/15 text-xs font-bold text-gray-700 dark:text-gray-200 hover:border-brand-red hover:text-brand-red transition-colors"
             >
               <Printer className="h-3.5 w-3.5" /> Print
-            </button>
-            <button
-              type="button"
+            </Link>
+            <Link
+              href={`/admin/invoices/${invoice.id}/pdf`}
               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-white/15 text-xs font-bold text-gray-700 dark:text-gray-200 hover:border-brand-red hover:text-brand-red transition-colors"
             >
               <Download className="h-3.5 w-3.5" /> Download PDF
-            </button>
+            </Link>
             <button
               type="button"
               className="shine-btn inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-brand-red hover:bg-deep-red text-white text-xs font-bold transition-colors"
@@ -161,7 +162,7 @@ export default async function InvoiceDetailPage({ params }: Props) {
       </article>
 
       <p className="mt-5 text-[11px] text-gray-400">
-        Print stylesheet & PDF download are wired in Prompt 11.
+        PDF download and clean browser print output are admin-gated.
       </p>
     </div>
   );

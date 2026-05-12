@@ -19,7 +19,7 @@ The project is deployed and usable on Vercel. Public booking works, Neon/Postgre
 | Phase 2 - Database and Auth | Complete core | Prisma schema, Neon database, seed data, custom admin login, JWT cookie sessions, protected admin routes. |
 | Phase 3 - Admin Dashboard Core | Complete core | Admin layout, dashboard, list/detail pages, and booking status actions exist. Full CRUD workflows are still pending. |
 | Phase 3.5 - Admin Hardening | Complete core | Admin login human check, password change, booking, car inventory, partner management, customer review, and dashboard performance polish are added. |
-| Phase 4 - Documents, Invoice, Email, SMS | In progress | Invoice generation from approved/completed bookings is added; private uploads, PDF download, email, SMS, and notification sending remain. |
+| Phase 4 - Documents, Invoice, Email, SMS | In progress | Invoice generation, PDF download, and clean print output are added; private uploads, email, SMS, and notification sending remain. |
 | Phase 5 - GPS Tracking | Not started | Data model and placeholder admin page exist, but provider integration and live tracking are pending. |
 
 ## Completed
@@ -57,6 +57,8 @@ The project is deployed and usable on Vercel. Public booking works, Neon/Postgre
 - Admin can generate an invoice from an approved or completed booking.
 - Booking detail shows the linked invoice once generated.
 - Recorded payments now sync an existing invoice's paid amount, balance, and payment status.
+- Admin can download an invoice PDF from a protected route.
+- Admin can open a clean print invoice view without dashboard chrome.
 
 ## In Progress
 
@@ -70,10 +72,9 @@ The project is deployed and usable on Vercel. Public booking works, Neon/Postgre
 ## Next Priority
 
 1. Add real admin user/password management so seeded demo credentials are no longer used.
-2. Add printable/PDF invoice output.
-3. Add private Cloudinary upload flow for customer documents and payment proofs.
-4. Add notification actions for manual email/SMS sending with `NotificationLog` records.
-5. Review admin read-only pages for payments and notifications.
+2. Add private Cloudinary upload flow for customer documents and payment proofs.
+3. Add notification actions for manual email/SMS sending with `NotificationLog` records.
+4. Review admin read-only pages for payments and notifications.
 
 ## Known Gaps
 
@@ -81,7 +82,7 @@ The project is deployed and usable on Vercel. Public booking works, Neon/Postgre
 - Booking documents currently store mock URLs and metadata only.
 - Admin payments, invoices, and notifications are mostly read-only.
 - Browsed admin car images are temporarily stored as compressed data URLs until Cloudinary/upload storage is wired.
-- Invoice creation is wired; printable/PDF invoice download is not wired yet.
+- Invoice creation, clean print output, and PDF download are wired.
 - Email/SMS providers are not configured or sending yet.
 - GPS is a placeholder module.
 - There are no automated tests yet.
