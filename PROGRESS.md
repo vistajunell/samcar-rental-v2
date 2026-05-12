@@ -18,7 +18,7 @@ The project is deployed and usable on Vercel. Public booking works, Neon/Postgre
 | Phase 1 - Public Flow | Complete | Old SamCar visual direction preserved, public cars, car details, booking form, booking success page, dark/light mode. |
 | Phase 2 - Database and Auth | Complete core | Prisma schema, Neon database, seed data, custom admin login, JWT cookie sessions, protected admin routes. |
 | Phase 3 - Admin Dashboard Core | Complete core | Admin layout, dashboard, list/detail pages, and booking status actions exist. Full CRUD workflows are still pending. |
-| Phase 3.5 - Admin Hardening | In progress | Admin login human check, password change, booking, car inventory, and partner management workflows are added; customer hardening remains before Phase 4. |
+| Phase 3.5 - Admin Hardening | In progress | Admin login human check, password change, booking, car inventory, partner management, and customer review workflows are added. |
 | Phase 4 - Documents, Invoice, Email, SMS | Not started | Schemas and seeded mock data exist, but real private uploads, PDF generation, email, SMS, and notification sending are pending. |
 | Phase 5 - GPS Tracking | Not started | Data model and placeholder admin page exist, but provider integration and live tracking are pending. |
 
@@ -48,29 +48,31 @@ The project is deployed and usable on Vercel. Public booking works, Neon/Postgre
 - Public and admin car image cards support both existing image paths and browsed database-backed images.
 - Admin can create and edit partner owners with contact details, commission rate, and internal notes.
 - Partner detail pages now show full admin inventory, including hidden and draft cars.
+- Admin can update customer verification status and internal review notes.
+- Blacklisted customers are blocked from public booking submission and admin booking approval.
 
 ## In Progress
 
 - Phase 3.5 admin hardening and management features.
 - Turning read-only admin tables into real create/edit/update workflows.
 - Booking management hardening: status transitions, notes, and payment recording.
-- Inventory management hardening: customer workflows after car and partner create/edit, visibility actions, partner assignment, image browsing, and availability windows.
+- Inventory management hardening: polish and edge-case checks after car, partner, and customer review workflows.
 - Replacing mock document URLs with private upload storage.
 - Hardening production admin credentials beyond seeded demo accounts.
 
 ## Next Priority
 
 1. Add real admin user/password management so seeded demo credentials are no longer used.
-2. Add customer review tools: verification status, blacklist flag, and admin notes.
-3. Add invoice generation trigger for approved or paid bookings.
-4. Add private Cloudinary upload flow for customer documents and payment proofs.
-5. Add notification actions for manual email/SMS sending with `NotificationLog` records.
+2. Add invoice generation trigger for approved or paid bookings.
+3. Add private Cloudinary upload flow for customer documents and payment proofs.
+4. Add notification actions for manual email/SMS sending with `NotificationLog` records.
+5. Review admin read-only pages for payments, invoices, and notifications.
 
 ## Known Gaps
 
 - Seeded admin credentials still exist and should be replaced before real customer use.
 - Booking documents currently store mock URLs and metadata only.
-- Admin customers, payments, invoices, and notifications are mostly read-only.
+- Admin payments, invoices, and notifications are mostly read-only.
 - Browsed admin car images are temporarily stored as compressed data URLs until Cloudinary/upload storage is wired.
 - Invoice PDF generation is not wired yet.
 - Email/SMS providers are not configured or sending yet.

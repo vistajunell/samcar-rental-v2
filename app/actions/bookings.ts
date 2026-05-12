@@ -39,12 +39,20 @@ async function transitionBooking(
     const updated = await prisma.$transaction(async (tx) => {
       const booking = await tx.booking.findUnique({
         where: { id: bookingId },
-        select: { id: true, status: true, reference: true },
+        select: {
+          id: true,
+          status: true,
+          reference: true,
+          customer: { select: { verificationStatus: true } },
+        },
       });
       if (!booking) throw new Error("NOT_FOUND");
 
       if (TERMINAL.includes(booking.status)) {
         throw new Error("TERMINAL");
+      }
+      if (next === "APPROVED" && booking.customer.verificationStatus === "BLACKLISTED") {
+        throw new Error("BLACKLISTED_CUSTOMER");
       }
       if (booking.status === next) {
         return booking;
@@ -89,6 +97,12 @@ async function transitionBooking(
           ok: false,
           message:
             "This booking is already in a terminal state (rejected, cancelled, or completed) and cannot be re-opened.",
+        };
+      }
+      if (err.message === "BLACKLISTED_CUSTOMER") {
+        return {
+          ok: false,
+          message: "This customer is blacklisted and cannot be approved for rental.",
         };
       }
     }

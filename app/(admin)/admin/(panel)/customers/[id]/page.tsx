@@ -4,6 +4,7 @@ import { format, parseISO } from "date-fns";
 import { Phone, Mail, MapPin } from "lucide-react";
 import PageHeader from "@/components/admin/PageHeader";
 import StatusBadge from "@/components/admin/StatusBadge";
+import CustomerReviewForm from "@/components/admin/CustomerReviewForm";
 import { getCustomerById } from "@/lib/queries/customers";
 import { getBookingsByCustomer } from "@/lib/queries/bookings";
 
@@ -115,14 +116,14 @@ export default async function CustomerDetailPage({ params }: Props) {
             )}
           </section>
 
-          {customer.notes && (
-            <section className="rounded-2xl bg-yellow-50 dark:bg-yellow-500/[.06] border border-yellow-200 dark:border-yellow-500/20 p-5">
-              <h2 className="text-sm font-bold text-yellow-900 dark:text-yellow-300 mb-2">
-                Notes
-              </h2>
-              <p className="text-xs text-yellow-800 dark:text-yellow-200">{customer.notes}</p>
-            </section>
-          )}
+          <section className="rounded-2xl bg-yellow-50 dark:bg-yellow-500/[.06] border border-yellow-200 dark:border-yellow-500/20 p-5">
+            <h2 className="text-sm font-bold text-yellow-900 dark:text-yellow-300 mb-2">
+              Admin Review Notes
+            </h2>
+            <p className="text-xs text-yellow-800 dark:text-yellow-200 whitespace-pre-wrap">
+              {customer.notes || "No internal review notes yet."}
+            </p>
+          </section>
         </div>
 
         <aside className="space-y-5">
@@ -141,22 +142,12 @@ export default async function CustomerDetailPage({ params }: Props) {
 
           <section className="rounded-2xl bg-white dark:bg-[#111] border border-gray-100 dark:border-white/[.05] p-5">
             <h2 className="text-sm font-bold text-gray-900 dark:text-white mb-3">
-              Verification Actions
+              Customer Review
             </h2>
-            <div className="grid grid-cols-1 gap-2">
-              <button
-                type="button"
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 dark:border-white/15 text-xs font-bold text-gray-700 dark:text-gray-200 hover:border-brand-red hover:text-brand-red transition-colors"
-              >
-                Mark as Verified
-              </button>
-              <button
-                type="button"
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg border border-red-300 dark:border-red-500/30 text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors"
-              >
-                Blacklist
-              </button>
-            </div>
+            <p className="mb-3 text-[11px] leading-relaxed text-gray-500 dark:text-gray-400">
+              Use Blacklisted only for customers SamCar should not approve for future rentals.
+            </p>
+            <CustomerReviewForm customer={customer} />
           </section>
         </aside>
       </div>

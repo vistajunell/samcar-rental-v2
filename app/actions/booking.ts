@@ -145,8 +145,23 @@ export async function createPendingBookingAction(
   const durationDays = computeDurationDays(start, end);
   const total = new Prisma.Decimal(car.pricePerDay).mul(durationDays);
 
+  const normalizedEmail = data.email.toLowerCase();
+  const existingCustomer = await prisma.customer.findUnique({
+    where: { email: normalizedEmail },
+    select: { verificationStatus: true },
+  });
+
+  if (existingCustomer?.verificationStatus === "BLACKLISTED") {
+    return {
+      ok: false,
+      message: "Please contact SamCar directly to continue with this booking request.",
+      errors: { email: ["Please contact SamCar before booking with this email."] },
+      values,
+    };
+  }
+
   const customer = await prisma.customer.upsert({
-    where: { email: data.email.toLowerCase() },
+    where: { email: normalizedEmail },
     update: {
       name: data.fullName,
       contactNumber: data.contactNumber,
@@ -155,7 +170,7 @@ export async function createPendingBookingAction(
     },
     create: {
       name: data.fullName,
-      email: data.email.toLowerCase(),
+      email: normalizedEmail,
       contactNumber: data.contactNumber,
       facebookName: data.facebookName?.trim() || null,
       address: data.residentialAddress,
