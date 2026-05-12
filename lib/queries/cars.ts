@@ -1,9 +1,16 @@
 import "server-only";
-import type { Prisma } from "@prisma/client";
+import type { CarStatus as PrismaCarStatus, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
-export type CarStatus = "Confirmed Available" | "Reserved" | "Unavailable";
+export type CarStatus =
+  | "Draft"
+  | "Confirmed Available"
+  | "Published"
+  | "Reserved"
+  | "Unavailable"
+  | "Archived";
 export type CarTransmission = "Automatic" | "Manual";
+export type CarFuelType = "Gasoline" | "Diesel" | "Hybrid" | "Electric" | "Other";
 
 export interface CarUIView {
   id: string;
@@ -15,10 +22,11 @@ export interface CarUIView {
   tagline?: string;
   image: string;
   status: CarStatus;
+  statusRaw: PrismaCarStatus;
   isPublic: boolean;
   seats: number;
   transmission: CarTransmission;
-  fuelType: string;
+  fuelType: CarFuelType;
   pricePerDay: number;
   /** ISO date (YYYY-MM-DD) — partner-confirmed availability window start. */
   availableFrom: string;
@@ -34,7 +42,7 @@ function transmissionLabel(t: "AUTOMATIC" | "MANUAL"): CarTransmission {
   return t === "AUTOMATIC" ? "Automatic" : "Manual";
 }
 
-function fuelLabel(f: string): string {
+function fuelLabel(f: string): CarFuelType {
   switch (f) {
     case "GASOLINE":
       return "Gasoline";
@@ -50,9 +58,12 @@ function fuelLabel(f: string): string {
 }
 
 function statusLabel(status: string, isPublic: boolean): CarStatus {
+  if (status === "DRAFT") return "Draft";
   if (status === "PUBLISHED" && isPublic) return "Confirmed Available";
+  if (status === "PUBLISHED") return "Published";
   if (status === "CONFIRMED_AVAILABLE") return "Confirmed Available";
   if (status === "UNAVAILABLE") return "Unavailable";
+  if (status === "ARCHIVED") return "Archived";
   return "Unavailable";
 }
 
@@ -100,6 +111,7 @@ function toView(car: CarRow): CarUIView {
     tagline: car.tagline ?? undefined,
     image: primary,
     status: statusLabel(car.status, car.isPublic),
+    statusRaw: car.status,
     isPublic: car.isPublic,
     seats: car.seats,
     transmission: transmissionLabel(car.transmission),
@@ -122,6 +134,18 @@ export async function getCarsForCarousel(): Promise<CarUIView[]> {
 export async function getPublishedCars(): Promise<CarUIView[]> {
   const rows = await loadCarRows({ publicOnly: true });
   return rows.map(toView);
+}
+
+/** Admin inventory list. Includes drafts, hidden units, unavailable cars, and archived records. */
+export async function getAdminCars(): Promise<CarUIView[]> {
+  const rows = await loadCarRows();
+  return rows.map(toView);
+}
+
+export async function getAdminCarById(id: string): Promise<CarUIView | null> {
+  const rows = await loadCarRows({ id });
+  const car = rows[0];
+  return car ? toView(car) : null;
 }
 
 /** Looks up a single car by slug, but only if it is publicly visible. */

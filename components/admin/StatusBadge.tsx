@@ -34,10 +34,13 @@ const styleByStatus: Record<string, string> = {
   VERIFIED: "bg-green-500/15 text-green-700 dark:text-green-300 border-green-500/30",
   BLACKLISTED: "bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/30",
   // Car
+  Draft: "bg-gray-500/15 text-gray-700 dark:text-gray-300 border-gray-500/30",
   "Confirmed Available":
     "bg-green-500/15 text-green-700 dark:text-green-300 border-green-500/30",
+  Published: "bg-green-500/15 text-green-700 dark:text-green-300 border-green-500/30",
   Reserved: "bg-yellow-500/15 text-yellow-700 dark:text-yellow-300 border-yellow-500/30",
   Unavailable: "bg-gray-500/15 text-gray-700 dark:text-gray-300 border-gray-500/30",
+  Archived: "bg-zinc-500/15 text-zinc-700 dark:text-zinc-300 border-zinc-500/30",
 };
 
 const labelByStatus: Record<string, string> = {

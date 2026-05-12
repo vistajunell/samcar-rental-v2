@@ -42,19 +42,23 @@ The project is deployed and usable on Vercel. Public booking works, Neon/Postgre
 - Booking actions support approve, mark under review, reject, cancel, and complete.
 - Booking detail supports editable internal admin notes.
 - Booking detail supports recording payments and automatically updates booking payment status.
+- Admin cars list now shows full inventory, including draft, hidden, unavailable, and archived units.
+- Admin can create and edit cars with partner assignment, price, specs, image path, status, and availability window.
+- Admin can publish, unpublish, mark unavailable, and archive cars.
 
 ## In Progress
 
 - Phase 3.5 admin hardening and management features.
 - Turning read-only admin tables into real create/edit/update workflows.
 - Booking management hardening: status transitions, notes, and payment recording.
+- Inventory management hardening: car create/edit, visibility actions, partner assignment, and availability windows.
 - Replacing mock document URLs with private upload storage.
 - Hardening production admin credentials beyond seeded demo accounts.
 
 ## Next Priority
 
 1. Add real admin user/password management so seeded demo credentials are no longer used.
-2. Add car management forms: create, edit, publish/unpublish, archive, partner assignment, and availability windows.
+2. Add partner management forms: create/edit partners and commission notes.
 3. Add invoice generation trigger for approved or paid bookings.
 4. Add private Cloudinary upload flow for customer documents and payment proofs.
 5. Add notification actions for manual email/SMS sending with `NotificationLog` records.

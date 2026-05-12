@@ -2,10 +2,20 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { format, parseISO } from "date-fns";
-import { Eye, EyeOff, Users, Cog, Fuel, Calendar } from "lucide-react";
+import {
+  Calendar,
+  Car,
+  Cog,
+  Eye,
+  EyeOff,
+  Fuel,
+  Pencil,
+  Users,
+} from "lucide-react";
 import PageHeader from "@/components/admin/PageHeader";
 import StatusBadge from "@/components/admin/StatusBadge";
-import { getCarsForCarousel } from "@/lib/queries/cars";
+import CarVisibilityActions from "@/components/admin/CarVisibilityActions";
+import { getAdminCarById } from "@/lib/queries/cars";
 import { getPartnerForCar } from "@/lib/queries/partners";
 import { getBookingsByCar } from "@/lib/queries/bookings";
 
@@ -15,14 +25,21 @@ interface Props {
 
 export default async function CarDetailAdminPage({ params }: Props) {
   const { id } = await params;
-  const all = await getCarsForCarousel();
-  const car = all.find((c) => c.id === id);
+  const car = await getAdminCarById(id);
   if (!car) notFound();
 
   const [partner, bookings] = await Promise.all([
     getPartnerForCar(car.id),
     getBookingsByCar(car.id),
   ]);
+
+  const availability =
+    car.availableFrom && car.availableTo
+      ? `${format(parseISO(car.availableFrom), "MMM d")} - ${format(
+          parseISO(car.availableTo),
+          "MMM d, yyyy",
+        )}`
+      : "No window";
 
   return (
     <div>
@@ -52,13 +69,19 @@ export default async function CarDetailAdminPage({ params }: Props) {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
         <div className="space-y-5">
           <div className="relative rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-[#1a1a1a] dark:to-[#0a0a0a] border border-gray-100 dark:border-white/[.05] h-[280px] sm:h-[360px]">
-            <Image
-              src={car.image}
-              alt={`${car.brand} ${car.name}`}
-              fill
-              sizes="(min-width: 1024px) 60vw, 100vw"
-              className="object-contain p-6"
-            />
+            {car.image ? (
+              <Image
+                src={car.image}
+                alt={`${car.brand} ${car.name}`}
+                fill
+                sizes="(min-width: 1024px) 60vw, 100vw"
+                className="object-contain p-6"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center text-sm font-bold text-gray-400">
+                No image configured
+              </div>
+            )}
           </div>
 
           <section className="rounded-2xl bg-white dark:bg-[#111] border border-gray-100 dark:border-white/[.05] p-5">
@@ -69,14 +92,7 @@ export default async function CarDetailAdminPage({ params }: Props) {
               <Spec Icon={Users} label="Seats" value={String(car.seats)} />
               <Spec Icon={Cog} label="Trans." value={car.transmission} />
               <Spec Icon={Fuel} label="Fuel" value={car.fuelType} />
-              <Spec
-                Icon={Calendar}
-                label="Available"
-                value={`${format(parseISO(car.availableFrom), "MMM d")} – ${format(
-                  parseISO(car.availableTo),
-                  "MMM d, yyyy",
-                )}`}
-              />
+              <Spec Icon={Calendar} label="Available" value={availability} />
             </dl>
           </section>
 
@@ -145,38 +161,29 @@ export default async function CarDetailAdminPage({ params }: Props) {
                 href={`/admin/partners/${partner.id}`}
                 className="mt-2 inline-block text-xs font-bold text-brand-red hover:text-deep-red"
               >
-                View partner →
+                View partner
               </Link>
             </section>
           )}
 
           <section className="rounded-2xl bg-white dark:bg-[#111] border border-gray-100 dark:border-white/[.05] p-5">
             <h2 className="text-sm font-bold text-gray-900 dark:text-white mb-3">
-              Visibility
+              Inventory Actions
             </h2>
-            <div className="grid grid-cols-1 gap-2">
-              <button
-                type="button"
+            <div className="grid grid-cols-1 gap-2 mb-2">
+              <Link
+                href={`/admin/cars/${car.id}/edit`}
                 className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 dark:border-white/15 text-xs font-bold text-gray-700 dark:text-gray-200 hover:border-brand-red hover:text-brand-red transition-colors"
               >
-                {car.isPublic ? "Unpublish" : "Publish"}
-              </button>
-              <button
-                type="button"
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg border border-gray-200 dark:border-white/15 text-xs font-bold text-gray-700 dark:text-gray-200 hover:border-brand-red hover:text-brand-red transition-colors"
-              >
+                <Pencil className="h-4 w-4" />
                 Edit details
-              </button>
-              <button
-                type="button"
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg border border-red-300 dark:border-red-500/30 text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors"
-              >
-                Archive
-              </button>
+              </Link>
             </div>
-            <p className="mt-3 text-[10px] text-gray-400">
-              Buttons are visual placeholders — wired up in Prompt 9.
-            </p>
+            <CarVisibilityActions
+              carId={car.id}
+              isPublic={car.isPublic}
+              status={car.statusRaw}
+            />
           </section>
         </aside>
       </div>
@@ -189,7 +196,7 @@ function Spec({
   label,
   value,
 }: {
-  Icon: typeof Users;
+  Icon: typeof Car;
   label: string;
   value: string;
 }) {
