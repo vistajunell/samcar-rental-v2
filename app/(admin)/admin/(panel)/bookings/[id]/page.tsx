@@ -15,6 +15,8 @@ import {
 import PageHeader from "@/components/admin/PageHeader";
 import StatusBadge from "@/components/admin/StatusBadge";
 import BookingStatusActions from "@/components/admin/BookingStatusActions";
+import BookingAdminNotesForm from "@/components/admin/BookingAdminNotesForm";
+import BookingPaymentForm from "@/components/admin/BookingPaymentForm";
 import { getBookingById } from "@/lib/queries/bookings";
 import { getPartnerById } from "@/lib/queries/partners";
 import { getPaymentsForBooking } from "@/lib/queries/payments";
@@ -218,6 +220,24 @@ export default async function BookingDetailPage({ params }: Props) {
               </ul>
             )}
           </section>
+
+          {/* Admin notes */}
+          <section className="rounded-2xl bg-white dark:bg-[#111] border border-gray-100 dark:border-white/[.05] overflow-hidden">
+            <header className="px-5 py-4 border-b border-gray-100 dark:border-white/[.05]">
+              <h2 className="text-sm font-bold text-gray-900 dark:text-white">
+                Internal Admin Notes
+              </h2>
+              <p className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
+                Private notes for verification, partner confirmation, and payment follow-up.
+              </p>
+            </header>
+            <div className="px-5 py-4">
+              <BookingAdminNotesForm
+                bookingId={booking.id}
+                initialNotes={booking.adminNotes}
+              />
+            </div>
+          </section>
         </div>
 
         {/* SIDEBAR COLUMN */}
@@ -256,6 +276,13 @@ export default async function BookingDetailPage({ params }: Props) {
                 <dd className="font-black text-brand-red text-base">{peso(balance)}</dd>
               </div>
             </dl>
+          </section>
+
+          <section className="rounded-2xl bg-white dark:bg-[#111] border border-gray-100 dark:border-white/[.05] p-5">
+            <h2 className="text-sm font-bold text-gray-900 dark:text-white mb-3">
+              Record Payment
+            </h2>
+            <BookingPaymentForm bookingId={booking.id} balance={balance} />
           </section>
 
           {/* Car + partner */}
@@ -320,17 +347,6 @@ export default async function BookingDetailPage({ params }: Props) {
               Wired in Prompt 12 (Resend + Semaphore PH).
             </p>
           </section>
-
-          {booking.adminNotes && (
-            <section className="rounded-2xl bg-yellow-50 dark:bg-yellow-500/[.06] border border-yellow-200 dark:border-yellow-500/20 p-5">
-              <h2 className="text-sm font-bold text-yellow-900 dark:text-yellow-300 mb-2">
-                Admin Notes
-              </h2>
-              <p className="text-xs text-yellow-800 dark:text-yellow-200 leading-relaxed">
-                {booking.adminNotes}
-              </p>
-            </section>
-          )}
         </aside>
       </div>
     </div>

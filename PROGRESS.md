@@ -39,12 +39,15 @@ The project is deployed and usable on Vercel. Public booking works, Neon/Postgre
 - Admin dashboard reads real database stats.
 - Admin bookings page reads submitted bookings.
 - Admin booking detail page displays customer, car, document metadata, payment rows, and status actions.
-- Booking actions support approve, mark under review, and reject.
+- Booking actions support approve, mark under review, reject, cancel, and complete.
+- Booking detail supports editable internal admin notes.
+- Booking detail supports recording payments and automatically updates booking payment status.
 
 ## In Progress
 
 - Phase 3.5 admin hardening and management features.
 - Turning read-only admin tables into real create/edit/update workflows.
+- Booking management hardening: status transitions, notes, and payment recording.
 - Replacing mock document URLs with private upload storage.
 - Hardening production admin credentials beyond seeded demo accounts.
 
@@ -52,7 +55,7 @@ The project is deployed and usable on Vercel. Public booking works, Neon/Postgre
 
 1. Add real admin user/password management so seeded demo credentials are no longer used.
 2. Add car management forms: create, edit, publish/unpublish, archive, partner assignment, and availability windows.
-3. Add booking management improvements: cancel, complete, admin notes, payment update, invoice generation trigger.
+3. Add invoice generation trigger for approved or paid bookings.
 4. Add private Cloudinary upload flow for customer documents and payment proofs.
 5. Add notification actions for manual email/SMS sending with `NotificationLog` records.
 

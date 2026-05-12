@@ -1,9 +1,11 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
-import { CheckCircle2, XCircle, Eye } from "lucide-react";
+import { Ban, CheckCircle2, Flag, XCircle, Eye } from "lucide-react";
 import {
   approveBookingAction,
+  cancelBookingAction,
+  completeBookingAction,
   markBookingUnderReviewAction,
   rejectBookingAction,
 } from "@/app/actions/bookings";
@@ -51,6 +53,23 @@ export default function BookingStatusActions({ bookingId, status }: Props) {
             Reject Booking
           </ActionButton>
         </form>
+
+        <form action={cancelBookingAction.bind(null, bookingId)}>
+          <ActionButton kind="cancel" disabled={isTerminal}>
+            <Ban className="h-4 w-4" />
+            Cancel Booking
+          </ActionButton>
+        </form>
+
+        <form action={completeBookingAction.bind(null, bookingId)}>
+          <ActionButton
+            kind="complete"
+            disabled={isTerminal || status !== "APPROVED"}
+          >
+            <Flag className="h-4 w-4" />
+            Mark Completed
+          </ActionButton>
+        </form>
       </div>
 
       {isTerminal && (
@@ -63,7 +82,7 @@ export default function BookingStatusActions({ bookingId, status }: Props) {
 }
 
 interface ActionButtonProps {
-  kind: "approve" | "review" | "reject";
+  kind: "approve" | "review" | "reject" | "cancel" | "complete";
   disabled?: boolean;
   children: React.ReactNode;
 }
@@ -81,6 +100,10 @@ function ActionButton({ kind, disabled, children }: ActionButtonProps) {
       "border border-gray-200 dark:border-white/15 text-gray-700 dark:text-gray-200 hover:border-yellow-500 hover:text-yellow-600",
     reject:
       "border border-red-300 dark:border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-500/10",
+    cancel:
+      "border border-gray-200 dark:border-white/15 text-gray-600 dark:text-gray-300 hover:border-gray-500 hover:text-gray-900 dark:hover:text-white",
+    complete:
+      "border border-green-300 dark:border-green-500/30 text-green-700 dark:text-green-300 hover:bg-green-500/10",
   } as const;
 
   return (
