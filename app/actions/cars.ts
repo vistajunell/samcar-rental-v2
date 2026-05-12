@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { Prisma, type CarStatus, type FuelType, type TransmissionType } from "@prisma/client";
 import { z } from "zod";
+import { invalidateCacheTags } from "@/lib/admin/invalidate-cache";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 import { prisma } from "@/lib/prisma";
 import { getAdminSession } from "@/lib/admin/session";
 
@@ -340,6 +342,13 @@ async function updateCarVisibility(
 }
 
 function revalidateCarViews(carId: string) {
+  invalidateCacheTags(
+    CACHE_TAGS.adminCars,
+    CACHE_TAGS.publicCars,
+    CACHE_TAGS.dashboard,
+    CACHE_TAGS.partners,
+    CACHE_TAGS.bookings,
+  );
   revalidatePath("/");
   revalidatePath("/cars");
   revalidatePath("/book");

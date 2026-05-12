@@ -1,5 +1,7 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
 import type { CarStatus as PrismaCarStatus, Prisma } from "@prisma/client";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 import { prisma } from "@/lib/prisma";
 
 export type CarStatus =
@@ -32,6 +34,8 @@ export interface CarUIView {
   availableFrom: string;
   /** ISO date (YYYY-MM-DD) — partner-confirmed availability window end. */
   availableTo: string;
+  partnerId?: string;
+  partnerName?: string;
 }
 
 function isoDate(d: Date): string {
@@ -82,6 +86,7 @@ async function loadCarRows(opts: { id?: string; slug?: string; publicOnly?: bool
     include: {
       images: { orderBy: [{ isPrimary: "desc" }, { position: "asc" }] },
       availability: { orderBy: { from: "asc" } },
+      partner: { select: { id: true, name: true } },
     },
     orderBy: { createdAt: "asc" },
   });
@@ -119,6 +124,8 @@ function toView(car: CarRow): CarUIView {
     pricePerDay: Number(car.pricePerDay),
     availableFrom,
     availableTo,
+    partnerId: car.partner?.id ?? undefined,
+    partnerName: car.partner?.name ?? undefined,
   };
 }
 
@@ -127,30 +134,62 @@ export async function getCarsForCarousel(): Promise<CarUIView[]> {
   return getPublishedCars();
 }
 
+const getCachedPublishedCars = unstable_cache(
+  async () => {
+    const rows = await loadCarRows({ publicOnly: true });
+    return rows.map(toView);
+  },
+  ["published-cars"],
+  { tags: [CACHE_TAGS.publicCars], revalidate: 60 },
+);
+
+const getCachedAdminCars = unstable_cache(
+  async () => {
+    const rows = await loadCarRows();
+    return rows.map(toView);
+  },
+  ["admin-cars"],
+  { tags: [CACHE_TAGS.adminCars], revalidate: 30 },
+);
+
+const getCachedAdminCarById = unstable_cache(
+  async (id: string) => {
+    const rows = await loadCarRows({ id });
+    const car = rows[0];
+    return car ? toView(car) : null;
+  },
+  ["admin-car-by-id"],
+  { tags: [CACHE_TAGS.adminCars], revalidate: 30 },
+);
+
+const getCachedCarBySlug = unstable_cache(
+  async (slug: string) => {
+    const rows = await loadCarRows({ slug, publicOnly: true });
+    const car = rows[0];
+    return car ? toView(car) : null;
+  },
+  ["public-car-by-slug"],
+  { tags: [CACHE_TAGS.publicCars], revalidate: 60 },
+);
+
 /**
  * Public-facing list. Only cars marked PUBLISHED + isPublic=true are
  * surfaced to customers.
  */
 export async function getPublishedCars(): Promise<CarUIView[]> {
-  const rows = await loadCarRows({ publicOnly: true });
-  return rows.map(toView);
+  return getCachedPublishedCars();
 }
 
 /** Admin inventory list. Includes drafts, hidden units, unavailable cars, and archived records. */
 export async function getAdminCars(): Promise<CarUIView[]> {
-  const rows = await loadCarRows();
-  return rows.map(toView);
+  return getCachedAdminCars();
 }
 
 export async function getAdminCarById(id: string): Promise<CarUIView | null> {
-  const rows = await loadCarRows({ id });
-  const car = rows[0];
-  return car ? toView(car) : null;
+  return getCachedAdminCarById(id);
 }
 
 /** Looks up a single car by slug, but only if it is publicly visible. */
 export async function getCarBySlug(slug: string): Promise<CarUIView | null> {
-  const rows = await loadCarRows({ slug, publicOnly: true });
-  const car = rows[0];
-  return car ? toView(car) : null;
+  return getCachedCarBySlug(slug);
 }

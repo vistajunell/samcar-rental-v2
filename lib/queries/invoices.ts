@@ -1,4 +1,6 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 import { prisma } from "@/lib/prisma";
 import type { PaymentStatus } from "@/lib/queries/bookings";
 
@@ -77,20 +79,36 @@ function toView(i: InvoiceRow): AdminInvoice {
   };
 }
 
+const getCachedInvoices = unstable_cache(
+  async () => {
+    const rows = await prisma.invoice.findMany({
+      include: invoiceInclude,
+      orderBy: { issuedAt: "desc" },
+    });
+    return rows.map(toView);
+  },
+  ["admin-invoices"],
+  { tags: [CACHE_TAGS.invoices], revalidate: 60 },
+);
+
+const getCachedInvoiceById = unstable_cache(
+  async (id: string) => {
+    const row = await prisma.invoice.findUnique({
+      where: { id },
+      include: invoiceInclude,
+    });
+    return row ? toView(row) : null;
+  },
+  ["admin-invoice-by-id"],
+  { tags: [CACHE_TAGS.invoices], revalidate: 60 },
+);
+
 export async function getInvoices(): Promise<AdminInvoice[]> {
-  const rows = await prisma.invoice.findMany({
-    include: invoiceInclude,
-    orderBy: { issuedAt: "desc" },
-  });
-  return rows.map(toView);
+  return getCachedInvoices();
 }
 
 export async function getInvoiceById(
   id: string,
 ): Promise<AdminInvoice | null> {
-  const row = await prisma.invoice.findUnique({
-    where: { id },
-    include: invoiceInclude,
-  });
-  return row ? toView(row) : null;
+  return getCachedInvoiceById(id);
 }

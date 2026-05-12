@@ -1,4 +1,6 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 import { prisma } from "@/lib/prisma";
 
 export type NotificationChannel = "SMS" | "EMAIL";
@@ -65,10 +67,18 @@ function toView(n: NotificationRow): AdminNotification {
   };
 }
 
+const getCachedNotifications = unstable_cache(
+  async () => {
+    const rows = await prisma.notificationLog.findMany({
+      include: notificationInclude,
+      orderBy: [{ sentAt: "desc" }, { createdAt: "desc" }],
+    });
+    return rows.map(toView);
+  },
+  ["admin-notifications"],
+  { tags: [CACHE_TAGS.notifications], revalidate: 60 },
+);
+
 export async function getNotifications(): Promise<AdminNotification[]> {
-  const rows = await prisma.notificationLog.findMany({
-    include: notificationInclude,
-    orderBy: [{ sentAt: "desc" }, { createdAt: "desc" }],
-  });
-  return rows.map(toView);
+  return getCachedNotifications();
 }

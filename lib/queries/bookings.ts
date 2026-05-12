@@ -1,4 +1,6 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 import { prisma } from "@/lib/prisma";
 
 export type BookingStatus =
@@ -167,88 +169,135 @@ function toView(b: BookingRow): AdminBooking {
   };
 }
 
+const getCachedBookings = unstable_cache(
+  async () => {
+    const rows = await prisma.booking.findMany({
+      include: bookingInclude,
+      orderBy: { createdAt: "desc" },
+    });
+    return rows.map(toView);
+  },
+  ["admin-bookings"],
+  { tags: [CACHE_TAGS.bookings], revalidate: 20 },
+);
+
+const getCachedBookingById = unstable_cache(
+  async (id: string) => {
+    const row = await prisma.booking.findUnique({
+      where: { id },
+      include: bookingInclude,
+    });
+    return row ? toView(row) : null;
+  },
+  ["admin-booking-by-id"],
+  { tags: [CACHE_TAGS.bookings], revalidate: 20 },
+);
+
+const getCachedRecentBookings = unstable_cache(
+  async (limit = 5) => {
+    const rows = await prisma.booking.findMany({
+      include: bookingInclude,
+      orderBy: { createdAt: "desc" },
+      take: limit,
+    });
+    return rows.map(toView);
+  },
+  ["admin-recent-bookings"],
+  { tags: [CACHE_TAGS.bookings, CACHE_TAGS.dashboard], revalidate: 20 },
+);
+
+const getCachedBookingsByCustomer = unstable_cache(
+  async (customerId: string) => {
+    const rows = await prisma.booking.findMany({
+      where: { customerId },
+      include: bookingInclude,
+      orderBy: { createdAt: "desc" },
+    });
+    return rows.map(toView);
+  },
+  ["admin-bookings-by-customer"],
+  { tags: [CACHE_TAGS.bookings, CACHE_TAGS.customers], revalidate: 20 },
+);
+
+const getCachedBookingsByCar = unstable_cache(
+  async (carId: string) => {
+    const rows = await prisma.booking.findMany({
+      where: { carId },
+      include: bookingInclude,
+      orderBy: { createdAt: "desc" },
+    });
+    return rows.map(toView);
+  },
+  ["admin-bookings-by-car"],
+  { tags: [CACHE_TAGS.bookings, CACHE_TAGS.adminCars], revalidate: 20 },
+);
+
+const getCachedDashboardStats = unstable_cache(
+  async () => {
+    const [statusGroups, paymentAgg, outstandingAgg] = await Promise.all([
+      prisma.booking.groupBy({
+        by: ["status"],
+        _count: { _all: true },
+      }),
+      prisma.booking.aggregate({
+        where: { NOT: { paymentStatus: "REFUNDED" } },
+        _sum: { paidAmount: true },
+      }),
+      prisma.booking.aggregate({
+        where: { status: { in: ["APPROVED", "UNDER_REVIEW"] } },
+        _sum: { totalAmount: true, paidAmount: true },
+      }),
+    ]);
+
+    const counts: Record<string, number> = {};
+    let totalBookings = 0;
+    for (const g of statusGroups) {
+      counts[g.status] = g._count._all;
+      totalBookings += g._count._all;
+    }
+
+    const outstanding =
+      Number(outstandingAgg._sum.totalAmount ?? 0) -
+      Number(outstandingAgg._sum.paidAmount ?? 0);
+
+    return {
+      totalBookings,
+      pendingVerification: counts["PENDING_VERIFICATION"] ?? 0,
+      underReview: counts["UNDER_REVIEW"] ?? 0,
+      approved: counts["APPROVED"] ?? 0,
+      completed: counts["COMPLETED"] ?? 0,
+      revenue: Number(paymentAgg._sum.paidAmount ?? 0),
+      outstanding,
+    };
+  },
+  ["admin-dashboard-stats"],
+  { tags: [CACHE_TAGS.dashboard, CACHE_TAGS.bookings], revalidate: 20 },
+);
+
 export async function getBookings(): Promise<AdminBooking[]> {
-  const rows = await prisma.booking.findMany({
-    include: bookingInclude,
-    orderBy: { createdAt: "desc" },
-  });
-  return rows.map(toView);
+  return getCachedBookings();
 }
 
 export async function getBookingById(id: string): Promise<AdminBooking | null> {
-  const row = await prisma.booking.findUnique({
-    where: { id },
-    include: bookingInclude,
-  });
-  return row ? toView(row) : null;
+  return getCachedBookingById(id);
 }
 
 export async function getRecentBookings(limit = 5): Promise<AdminBooking[]> {
-  const rows = await prisma.booking.findMany({
-    include: bookingInclude,
-    orderBy: { createdAt: "desc" },
-    take: limit,
-  });
-  return rows.map(toView);
+  return getCachedRecentBookings(limit);
 }
 
 export async function getBookingsByCustomer(
   customerId: string,
 ): Promise<AdminBooking[]> {
-  const rows = await prisma.booking.findMany({
-    where: { customerId },
-    include: bookingInclude,
-    orderBy: { createdAt: "desc" },
-  });
-  return rows.map(toView);
+  return getCachedBookingsByCustomer(customerId);
 }
 
 export async function getBookingsByCar(
   carId: string,
 ): Promise<AdminBooking[]> {
-  const rows = await prisma.booking.findMany({
-    where: { carId },
-    include: bookingInclude,
-    orderBy: { createdAt: "desc" },
-  });
-  return rows.map(toView);
+  return getCachedBookingsByCar(carId);
 }
 
 export async function getDashboardStats() {
-  const [statusGroups, paymentAgg, outstandingAgg] = await Promise.all([
-    prisma.booking.groupBy({
-      by: ["status"],
-      _count: { _all: true },
-    }),
-    prisma.booking.aggregate({
-      where: { NOT: { paymentStatus: "REFUNDED" } },
-      _sum: { paidAmount: true },
-    }),
-    prisma.booking.findMany({
-      where: { status: { in: ["APPROVED", "UNDER_REVIEW"] } },
-      select: { totalAmount: true, paidAmount: true },
-    }),
-  ]);
-
-  const counts: Record<string, number> = {};
-  let totalBookings = 0;
-  for (const g of statusGroups) {
-    counts[g.status] = g._count._all;
-    totalBookings += g._count._all;
-  }
-
-  const outstanding = outstandingAgg.reduce(
-    (sum, b) => sum + (Number(b.totalAmount) - Number(b.paidAmount)),
-    0,
-  );
-
-  return {
-    totalBookings,
-    pendingVerification: counts["PENDING_VERIFICATION"] ?? 0,
-    underReview: counts["UNDER_REVIEW"] ?? 0,
-    approved: counts["APPROVED"] ?? 0,
-    completed: counts["COMPLETED"] ?? 0,
-    revenue: Number(paymentAgg._sum.paidAmount ?? 0),
-    outstanding,
-  };
+  return getCachedDashboardStats();
 }

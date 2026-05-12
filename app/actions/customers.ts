@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { Prisma, type CustomerVerificationStatus } from "@prisma/client";
 import { z } from "zod";
 import { getAdminSession } from "@/lib/admin/session";
+import { invalidateCacheTags } from "@/lib/admin/invalidate-cache";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 import { prisma } from "@/lib/prisma";
 
 export type CustomerReviewFormState = {
@@ -90,6 +92,11 @@ export async function updateCustomerReviewAction(
 }
 
 function revalidateCustomerViews(customerId: string) {
+  invalidateCacheTags(
+    CACHE_TAGS.customers,
+    CACHE_TAGS.bookings,
+    CACHE_TAGS.dashboard,
+  );
   revalidatePath("/admin/customers");
   revalidatePath(`/admin/customers/${customerId}`);
   revalidatePath("/admin/bookings");

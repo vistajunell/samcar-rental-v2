@@ -1,16 +1,12 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { Plus, ChevronRight, Eye, EyeOff } from "lucide-react";
 import PageHeader from "@/components/admin/PageHeader";
 import StatusBadge from "@/components/admin/StatusBadge";
 import SmartCarImage from "@/components/ui/SmartCarImage";
 import { getAdminCars } from "@/lib/queries/cars";
-import { getPartnerForCar } from "@/lib/queries/partners";
 
 export default async function AdminCarsPage() {
   const cars = await getAdminCars();
-  const enriched = await Promise.all(
-    cars.map(async (c) => ({ car: c, partner: await getPartnerForCar(c.id) })),
-  );
 
   return (
     <div>
@@ -29,7 +25,7 @@ export default async function AdminCarsPage() {
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {enriched.map(({ car, partner }) => (
+        {cars.map((car) => (
           <article
             key={car.id}
             className="rounded-2xl bg-white dark:bg-[#111] border border-gray-100 dark:border-white/[.05] overflow-hidden group hover:border-brand-red/20 transition-colors"
@@ -66,20 +62,20 @@ export default async function AdminCarsPage() {
 
             <div className="p-4">
               <p className="text-[10px] text-brand-red font-bold uppercase tracking-widest">
-                {car.brand} · {car.year}
+                {car.brand} Â· {car.year}
               </p>
               <h3 className="text-base font-black text-gray-900 dark:text-white tracking-tight">
                 {car.name}
               </h3>
               <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
-                {car.seats} seats · {car.transmission} · {car.fuelType}
+                {car.seats} seats Â· {car.transmission} Â· {car.fuelType}
               </p>
 
               <div className="mt-3 pt-3 border-t border-gray-100 dark:border-white/[.05] flex items-center justify-between">
                 <div>
                   <p className="text-[10px] uppercase text-gray-400">Partner</p>
                   <p className="text-xs font-semibold text-gray-700 dark:text-gray-200">
-                    {partner?.name ?? "—"}
+                    {car.partnerName ?? "-"}
                   </p>
                 </div>
                 <Link

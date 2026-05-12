@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { Prisma, type BookingStatus, type PaymentMethod } from "@prisma/client";
 import { z } from "zod";
+import { invalidateCacheTags } from "@/lib/admin/invalidate-cache";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 import { prisma } from "@/lib/prisma";
 import { getAdminSession } from "@/lib/admin/session";
 
@@ -82,9 +84,7 @@ async function transitionBooking(
       return result;
     });
 
-    revalidatePath("/admin/bookings");
-    revalidatePath(`/admin/bookings/${bookingId}`);
-    revalidatePath("/admin/dashboard");
+    revalidateBookingViews(bookingId);
 
     return { ok: true, status: updated.status };
   } catch (err) {
@@ -400,6 +400,13 @@ export async function recordBookingPaymentAction(
 }
 
 function revalidateBookingViews(bookingId: string) {
+  invalidateCacheTags(
+    CACHE_TAGS.bookings,
+    CACHE_TAGS.dashboard,
+    CACHE_TAGS.customers,
+    CACHE_TAGS.payments,
+    CACHE_TAGS.invoices,
+  );
   revalidatePath("/admin/bookings");
   revalidatePath(`/admin/bookings/${bookingId}`);
   revalidatePath("/admin/dashboard");

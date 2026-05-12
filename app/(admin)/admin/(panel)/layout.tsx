@@ -3,6 +3,8 @@ import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import { getAdminSession } from "@/lib/admin/session";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminPanelLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {

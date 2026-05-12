@@ -50,13 +50,17 @@ The project is deployed and usable on Vercel. Public booking works, Neon/Postgre
 - Partner detail pages now show full admin inventory, including hidden and draft cars.
 - Admin can update customer verification status and internal review notes.
 - Blacklisted customers are blocked from public booking submission and admin booking approval.
+- Dashboard/admin queries now use short-lived tagged caching with mutation invalidation.
+- Admin cars page no longer performs per-car partner lookups.
+- Customer and dashboard totals now use database aggregation instead of loading all rows into memory.
+- Protected admin panel routes are explicitly runtime-dynamic to avoid build-time dashboard database work.
 
 ## In Progress
 
 - Phase 3.5 admin hardening and management features.
 - Turning read-only admin tables into real create/edit/update workflows.
 - Booking management hardening: status transitions, notes, and payment recording.
-- Inventory management hardening: polish and edge-case checks after car, partner, and customer review workflows.
+- Phase 3.5 polish and performance checks after car, partner, customer, booking, and dashboard cache workflows.
 - Replacing mock document URLs with private upload storage.
 - Hardening production admin credentials beyond seeded demo accounts.
 

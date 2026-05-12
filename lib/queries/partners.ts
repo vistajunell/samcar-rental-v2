@@ -1,5 +1,7 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
 import type { Prisma } from "@prisma/client";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 import { prisma } from "@/lib/prisma";
 
 export interface Partner {
@@ -38,20 +40,36 @@ function toView(p: PartnerRow): Partner {
   };
 }
 
+const getCachedPartners = unstable_cache(
+  async () => {
+    const rows = await prisma.partner.findMany({
+      include: { cars: { select: { id: true } } },
+      orderBy: { joinedAt: "asc" },
+    });
+    return rows.map(toView);
+  },
+  ["admin-partners"],
+  { tags: [CACHE_TAGS.partners], revalidate: 60 },
+);
+
+const getCachedPartnerById = unstable_cache(
+  async (id: string) => {
+    const row = await prisma.partner.findUnique({
+      where: { id },
+      include: { cars: { select: { id: true } } },
+    });
+    return row ? toView(row) : null;
+  },
+  ["admin-partner-by-id"],
+  { tags: [CACHE_TAGS.partners], revalidate: 60 },
+);
+
 export async function getPartners(): Promise<Partner[]> {
-  const rows = await prisma.partner.findMany({
-    include: { cars: { select: { id: true } } },
-    orderBy: { joinedAt: "asc" },
-  });
-  return rows.map(toView);
+  return getCachedPartners();
 }
 
 export async function getPartnerById(id: string): Promise<Partner | null> {
-  const row = await prisma.partner.findUnique({
-    where: { id },
-    include: { cars: { select: { id: true } } },
-  });
-  return row ? toView(row) : null;
+  return getCachedPartnerById(id);
 }
 
 export async function getPartnerForCar(

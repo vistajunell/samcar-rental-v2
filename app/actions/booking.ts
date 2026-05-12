@@ -2,6 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
+import { invalidateCacheTags } from "@/lib/admin/invalidate-cache";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 import { bookingSchema } from "@/lib/validation/booking";
 import { prisma } from "@/lib/prisma";
 
@@ -243,6 +245,12 @@ export async function createPendingBookingAction(
       };
     }),
   });
+
+  invalidateCacheTags(
+    CACHE_TAGS.bookings,
+    CACHE_TAGS.customers,
+    CACHE_TAGS.dashboard,
+  );
 
   const params = new URLSearchParams({
     ref: booking.reference,

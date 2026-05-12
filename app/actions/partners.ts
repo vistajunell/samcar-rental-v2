@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { getAdminSession } from "@/lib/admin/session";
+import { invalidateCacheTags } from "@/lib/admin/invalidate-cache";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 import { prisma } from "@/lib/prisma";
 
 export type PartnerFormState = {
@@ -164,6 +166,11 @@ export async function updatePartnerAction(
 }
 
 function revalidatePartnerViews(partnerId: string) {
+  invalidateCacheTags(
+    CACHE_TAGS.partners,
+    CACHE_TAGS.adminCars,
+    CACHE_TAGS.dashboard,
+  );
   revalidatePath("/admin/partners");
   revalidatePath(`/admin/partners/${partnerId}`);
   revalidatePath(`/admin/partners/${partnerId}/edit`);
