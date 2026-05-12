@@ -104,6 +104,7 @@ Run these commands from the project root:
 
 ```bash
 npm install
+npm run db:generate
 npm run db:push
 npm run db:seed
 npm run build
@@ -114,7 +115,7 @@ Expected result:
 ```txt
 db:push creates the tables in the hosted database
 db:seed inserts demo cars, bookings, and admin/staff accounts
-build succeeds after DATABASE_URL points to that same database
+build generates Prisma Client, then succeeds after DATABASE_URL points to that same database
 ```
 
 ## 4. Push the project to GitHub

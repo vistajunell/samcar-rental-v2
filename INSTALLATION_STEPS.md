@@ -87,6 +87,7 @@ Notes:
 This repo currently has no prisma/migrations folder
 Use db:push for the first environment setup
 Use db:seed to load demo cars, bookings, and admin accounts
+npm run build also runs prisma generate before next build
 ```
 
 ## 5. Validate the production build locally
