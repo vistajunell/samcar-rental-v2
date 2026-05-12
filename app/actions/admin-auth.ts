@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { verifyHumanCheck } from "@/lib/admin/human-check";
 import {
   clearAdminSession,
   setAdminSession,
@@ -30,15 +31,27 @@ export async function adminLoginAction(
     email: rawEmail,
     password: formData.get("password") ?? "",
   });
+  const humanCheckOk = await verifyHumanCheck(
+    String(formData.get("humanCheckToken") ?? ""),
+    String(formData.get("humanCheckAnswer") ?? ""),
+  );
 
-  if (!parsed.success) {
-    const flat = parsed.error.flatten();
+  if (!parsed.success || !humanCheckOk) {
+    const fieldErrorEntries = parsed.success
+      ? []
+      : Object.entries(parsed.error.flatten().fieldErrors).filter(
+          ([, v]) => v && v.length,
+        );
+    if (!humanCheckOk) {
+      fieldErrorEntries.push([
+        "humanCheckAnswer",
+        ["Answer the human check correctly."],
+      ]);
+    }
     return {
       ok: false,
       message: "Please fix the highlighted fields and try again.",
-      errors: Object.fromEntries(
-        Object.entries(flat.fieldErrors).filter(([, v]) => v && v.length),
-      ) as Record<string, string[]>,
+      errors: Object.fromEntries(fieldErrorEntries),
       values: { email: rawEmail },
     };
   }

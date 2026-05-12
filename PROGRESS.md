@@ -5,7 +5,7 @@ Last updated: 2026-05-12
 ## Current Phase
 
 ```txt
-Phase 3 - Admin Dashboard Core is in progress.
+Phase 3.5 - Admin hardening and management workflows are in progress.
 ```
 
 The project is deployed and usable on Vercel. Public booking works, Neon/PostgreSQL is connected, admin login works, and the admin dashboard can view real database records.
@@ -17,7 +17,8 @@ The project is deployed and usable on Vercel. Public booking works, Neon/Postgre
 | Phase 0 - Safe Setup | Complete | New repo, new Vercel project, new Neon database, environment variables, GitHub push, production deploy. |
 | Phase 1 - Public Flow | Complete | Old SamCar visual direction preserved, public cars, car details, booking form, booking success page, dark/light mode. |
 | Phase 2 - Database and Auth | Complete core | Prisma schema, Neon database, seed data, custom admin login, JWT cookie sessions, protected admin routes. |
-| Phase 3 - Admin Dashboard Core | In progress | Admin layout, dashboard, list/detail pages, and booking status actions exist. Full CRUD workflows are still pending. |
+| Phase 3 - Admin Dashboard Core | Complete core | Admin layout, dashboard, list/detail pages, and booking status actions exist. Full CRUD workflows are still pending. |
+| Phase 3.5 - Admin Hardening | In progress | Admin login human check and password change flow are being added before moving to automation-heavy Phase 4. |
 | Phase 4 - Documents, Invoice, Email, SMS | Not started | Schemas and seeded mock data exist, but real private uploads, PDF generation, email, SMS, and notification sending are pending. |
 | Phase 5 - GPS Tracking | Not started | Data model and placeholder admin page exist, but provider integration and live tracking are pending. |
 
@@ -33,6 +34,8 @@ The project is deployed and usable on Vercel. Public booking works, Neon/Postgre
 - `/booking-success` confirms submitted requests.
 - Admin `/admin/login` works on production.
 - Admin protected routes require a valid session.
+- Admin login includes a signed human verification challenge.
+- Signed-in admins can change their own password from settings.
 - Admin dashboard reads real database stats.
 - Admin bookings page reads submitted bookings.
 - Admin booking detail page displays customer, car, document metadata, payment rows, and status actions.
@@ -40,7 +43,7 @@ The project is deployed and usable on Vercel. Public booking works, Neon/Postgre
 
 ## In Progress
 
-- Phase 3 admin management features.
+- Phase 3.5 admin hardening and management features.
 - Turning read-only admin tables into real create/edit/update workflows.
 - Replacing mock document URLs with private upload storage.
 - Hardening production admin credentials beyond seeded demo accounts.

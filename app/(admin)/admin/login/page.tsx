@@ -4,6 +4,7 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import AdminLoginForm from "@/components/admin/AdminLoginForm";
+import { createHumanCheckChallenge } from "@/lib/admin/human-check";
 import { getAdminSession } from "@/lib/admin/session";
 
 export const metadata: Metadata = {
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 export default async function AdminLoginPage() {
   const session = await getAdminSession();
   if (session) redirect("/admin/dashboard");
+  const humanCheck = await createHumanCheckChallenge();
 
   return (
     <main className="min-h-screen bg-[#f7f7f7] dark:bg-[#050505] flex items-center justify-center px-4 py-12">
@@ -47,7 +49,7 @@ export default async function AdminLoginPage() {
               Manage bookings, partners, cars, payments, and notifications from the SamCar
               admin console.
             </p>
-            <AdminLoginForm />
+            <AdminLoginForm humanCheck={humanCheck} />
           </div>
         </div>
       </div>

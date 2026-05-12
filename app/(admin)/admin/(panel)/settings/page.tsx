@@ -1,5 +1,6 @@
 import { Save } from "lucide-react";
 import PageHeader from "@/components/admin/PageHeader";
+import AdminPasswordForm from "@/components/admin/AdminPasswordForm";
 
 const inputClass =
   "w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-transparent transition-all";
@@ -27,6 +28,13 @@ export default function SettingsPage() {
             <Field label="Operating hours" defaultValue="Mon–Sun · 7:00 AM – 9:00 PM" />
             <FullField label="Address" defaultValue="Lucena City, Quezon Province, Philippines" />
           </div>
+        </Section>
+
+        <Section
+          title="Admin Security"
+          description="Update the password for the currently signed-in admin account."
+        >
+          <AdminPasswordForm />
         </Section>
 
         <Section

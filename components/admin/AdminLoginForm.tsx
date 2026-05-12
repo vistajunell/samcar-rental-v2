@@ -6,6 +6,7 @@ import {
   adminLoginAction,
   type AdminLoginState,
 } from "@/app/actions/admin-auth";
+import type { HumanCheckChallenge } from "@/lib/admin/human-check";
 
 const inputClass =
   "w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-red focus:border-transparent transition-all";
@@ -13,7 +14,11 @@ const inputClass =
 const labelClass =
   "text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 block";
 
-export default function AdminLoginForm() {
+interface Props {
+  humanCheck: HumanCheckChallenge;
+}
+
+export default function AdminLoginForm({ humanCheck }: Props) {
   const [state, formAction, isPending] = useActionState<
     AdminLoginState | undefined,
     FormData
@@ -69,6 +74,32 @@ export default function AdminLoginForm() {
           <p className="mt-1 flex items-start gap-1 text-[11px] text-red-600 dark:text-red-400">
             <AlertCircle className="h-3 w-3 mt-0.5 shrink-0" />
             <span>{e.password[0]}</span>
+          </p>
+        ) : null}
+      </div>
+
+      <div>
+        <label htmlFor="humanCheckAnswer" className={labelClass}>
+          Human check: what is {humanCheck.question}?
+        </label>
+        <input
+          id="humanCheckAnswer"
+          name="humanCheckAnswer"
+          type="text"
+          inputMode="numeric"
+          autoComplete="off"
+          className={inputClass}
+          placeholder="Answer"
+        />
+        <input
+          type="hidden"
+          name="humanCheckToken"
+          value={humanCheck.token}
+        />
+        {e.humanCheckAnswer?.length ? (
+          <p className="mt-1 flex items-start gap-1 text-[11px] text-red-600 dark:text-red-400">
+            <AlertCircle className="h-3 w-3 mt-0.5 shrink-0" />
+            <span>{e.humanCheckAnswer[0]}</span>
           </p>
         ) : null}
       </div>

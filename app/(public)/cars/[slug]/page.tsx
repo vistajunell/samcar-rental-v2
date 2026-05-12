@@ -12,7 +12,9 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { getCarBySlug, getPublishedCars } from "@/lib/queries/cars";
+import { getCarBySlug } from "@/lib/queries/cars";
+
+export const dynamic = "force-dynamic";
 
 interface Params {
   params: Promise<{ slug: string }>;
@@ -28,11 +30,6 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       car.tagline ??
       `Confirmed available ${car.brand} ${car.name} (${car.year}) from SamCar's trusted partner owners.`,
   };
-}
-
-export async function generateStaticParams() {
-  const cars = await getPublishedCars();
-  return cars.map((c) => ({ slug: c.slug }));
 }
 
 export default async function CarDetailPage({ params }: Params) {
