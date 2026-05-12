@@ -1,0 +1,10 @@
+.env
+.env.*
+
+.next
+node_modules
+samcar-rental-v2.zip
+
+.claude
+*.code-workspace
+*.log
