@@ -8,14 +8,13 @@ import {
   Car,
   FileText,
   Lock,
-  Mail,
-  MessageSquare,
   Receipt,
 } from "lucide-react";
 import PageHeader from "@/components/admin/PageHeader";
 import StatusBadge from "@/components/admin/StatusBadge";
 import BookingStatusActions from "@/components/admin/BookingStatusActions";
 import BookingAdminNotesForm from "@/components/admin/BookingAdminNotesForm";
+import BookingCommunicationForm from "@/components/admin/BookingCommunicationForm";
 import BookingPaymentForm from "@/components/admin/BookingPaymentForm";
 import InvoiceGenerateForm from "@/components/admin/InvoiceGenerateForm";
 import { getBookingById } from "@/lib/queries/bookings";
@@ -366,25 +365,7 @@ export default async function BookingDetailPage({ params }: Props) {
             <h2 className="text-sm font-bold text-gray-900 dark:text-white mb-3">
               Send Communication
             </h2>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-white/15 text-xs font-bold text-gray-700 dark:text-gray-200 hover:border-brand-red hover:text-brand-red transition-colors"
-              >
-                <Mail className="h-3.5 w-3.5" />
-                Email
-              </button>
-              <button
-                type="button"
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 dark:border-white/15 text-xs font-bold text-gray-700 dark:text-gray-200 hover:border-brand-red hover:text-brand-red transition-colors"
-              >
-                <MessageSquare className="h-3.5 w-3.5" />
-                SMS
-              </button>
-            </div>
-            <p className="mt-3 text-[10px] text-gray-400 leading-relaxed">
-              Wired in Prompt 12 (Resend + Semaphore PH).
-            </p>
+            <BookingCommunicationForm bookingId={booking.id} />
           </section>
         </aside>
       </div>

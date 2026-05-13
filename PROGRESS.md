@@ -59,6 +59,8 @@ The project is deployed and usable on Vercel. Public booking works, Neon/Postgre
 - Recorded payments now sync an existing invoice's paid amount, balance, and payment status.
 - Admin can download an invoice PDF from a protected route.
 - Admin can open a clean print invoice view without dashboard chrome.
+- Admin can manually send booking update email/SMS messages from booking detail pages.
+- Every manual email/SMS attempt is logged to `NotificationLog` with provider success or failure details.
 
 ## In Progress
 
@@ -83,7 +85,7 @@ The project is deployed and usable on Vercel. Public booking works, Neon/Postgre
 - Admin payments, invoices, and notifications are mostly read-only.
 - Browsed admin car images are temporarily stored as compressed data URLs until Cloudinary/upload storage is wired.
 - Invoice creation, clean print output, and PDF download are wired.
-- Email/SMS providers are not configured or sending yet.
+- Manual email/SMS actions are wired, but provider credentials still need to be configured in `.env` before production sending works.
 - GPS is a placeholder module.
 - There are no automated tests yet.
 
